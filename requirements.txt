@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-multipart
+pyautocad
+reportlab
+pywin32
+pyodbc
+python-dotenv

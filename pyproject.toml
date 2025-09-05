@@ -1,0 +1,28 @@
+[project]
+name = "dwg2pdf-api"
+version = "0.1.0"
+description = "DWG to PDF conversion API using FastAPI"
+authors = [
+  { name = "User", email = "user@example.com" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+]
+
+dependencies = [
+    "fastapi>=0.95.0",
+    "uvicorn>=0.22.0",
+    "python-multipart>=0.0.6",
+    "pyautocad>=0.2.0",
+    "reportlab>=3.6.0",
+    "pywin32>=305",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
