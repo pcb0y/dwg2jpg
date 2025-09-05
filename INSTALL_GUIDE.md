@@ -1,6 +1,6 @@
 # 安装和运行指南
 
-本指南将帮助您安装项目依赖并运行DWG到PDF转换API。
+本指南将帮助您安装项目依赖并运行DWG到JPG转换API。
 
 ## 快速启动
 
@@ -115,7 +115,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8080
 
 双击运行 `test_api.bat` 脚本，它会自动使用正确的Python环境运行测试：
 - 不带参数：测试API连接是否正常
-- 带DWG文件路径参数：测试DWG到PDF转换功能
+- 带DWG文件路径参数：测试DWG到JPG转换功能
 
 例如：
 ```powershell
@@ -132,7 +132,7 @@ start test_api.bat "C:\path\to\your\file.dwg"
 # 测试API连接
 python test_api.py
 
-# 测试DWG到PDF转换功能
+# 测试DWG到JPG转换功能
 python test_api.py path/to/your/file.dwg
 ```
 
@@ -140,7 +140,7 @@ python test_api.py path/to/your/file.dwg
 
 ```powershell
 # 使用curl测试
-curl -X POST "http://localhost:8000/convert/dwg-to-pdf" -F "file=@path/to/your/file.dwg" --output converted.pdf
+curl -X POST "http://localhost:8000/convert/dwg-to-jpg" -F "file=@path/to/your/file.dwg" --output converted.jpg
 ```
 
 ## 临时文件清理

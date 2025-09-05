@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -243,6 +242,79 @@ def calculate_bbox(doc):
 
 
 
+def convert_dwg_to_jpg(dwg_path, jpg_path, size=1600, bg_color='white', line_color='black', dpi=300):
+    """
+    将DWG文件直接转换为JPG图像
+    
+    Args:
+        dwg_path: DWG文件路径
+        jpg_path: 输出JPG文件路径
+        size: 输出图像的宽度 (像素)
+        bg_color: 背景颜色
+        line_color: 线条颜色
+        dpi: 输出图像的DPI
+        
+    Returns:
+        bool: 转换是否成功
+    """
+    try:
+        logger.info(f"开始DWG到JPG的完整转换: {dwg_path} -> {jpg_path}")
+        
+        # 确保输出目录存在
+        output_dir = os.path.dirname(jpg_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+        
+        # 生成临时DXF文件路径
+        import tempfile
+        temp_dir = tempfile.mkdtemp(prefix='dwg2jpg_')
+        base_name = os.path.splitext(os.path.basename(dwg_path))[0]
+        temp_dxf_path = os.path.join(temp_dir, f"{base_name}.dxf")
+        
+        logger.info(f"创建临时DXF文件: {temp_dxf_path}")
+        
+        # 第一步：将DWG转换为DXF
+        logger.info("步骤1: 正在将DWG转换为DXF...")
+        dxf_success = convert_dwg_to_dxf(dwg_path, temp_dxf_path)
+        
+        if not dxf_success:
+            logger.error("DWG到DXF转换失败")
+            return False
+        
+        # 检查临时DXF文件是否存在
+        if not os.path.exists(temp_dxf_path):
+            logger.error(f"临时DXF文件不存在: {temp_dxf_path}")
+            return False
+        
+        # 第二步：读取DXF文件并转换为JPG
+        logger.info("步骤2: 正在将DXF转换为JPG...")
+        try:
+            doc = ezdxf.readfile(temp_dxf_path)
+            jpg_success = convert_dxf_to_jpg(doc, jpg_path, size, bg_color, line_color, dpi)
+            
+            if jpg_success:
+                logger.info(f"DWG到JPG转换成功，输出文件: {jpg_path}")
+            else:
+                logger.error("DXF到JPG转换失败")
+            
+            return jpg_success
+        except Exception as e:
+            logger.error(f"读取DXF文件或转换为JPG时出错: {str(e)}")
+            return False
+        finally:
+            # 清理临时文件和目录
+            logger.info("清理临时文件...")
+            try:
+                if os.path.exists(temp_dxf_path):
+                    os.remove(temp_dxf_path)
+                if os.path.exists(temp_dir):
+                    os.rmdir(temp_dir)
+            except Exception as cleanup_error:
+                logger.warning(f"清理临时文件时出错: {str(cleanup_error)}")
+                
+    except Exception as e:
+        logger.error(f"DWG到JPG转换过程中发生错误: {str(e)}")
+        return False
 
 def convert_dxf_to_jpg(doc, output_path, size=1600, bg_color='white', line_color='black', dpi=300):
     """
@@ -284,7 +356,7 @@ def convert_dxf_to_jpg(doc, output_path, size=1600, bg_color='white', line_color
             bg_hex = "#" + bg_hex
         if not fg_hex.startswith("#") and len(fg_hex) == 6:
             fg_hex = "#" + fg_hex
-             
+              
         # 设置前景色（线条颜色）和背景色
         msp_properties.set_colors(bg_hex, fg=fg_hex)
         
@@ -310,6 +382,3 @@ def convert_dxf_to_jpg(doc, output_path, size=1600, bg_color='white', line_color
         logger.error(f"转换过程中出错")
         logger.error(f"错误: {str(e)}")
         return False
-
-
-

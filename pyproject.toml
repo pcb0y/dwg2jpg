@@ -1,7 +1,7 @@
 [project]
 name = "dwg2pdf-api"
 version = "0.1.0"
-description = "DWG to PDF conversion API using FastAPI"
+description = "DWG to JPG conversion API using FastAPI"
 authors = [
   { name = "User", email = "user@example.com" },
 ]

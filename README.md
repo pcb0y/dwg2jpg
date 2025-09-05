@@ -1,13 +1,12 @@
-# DWG to PDF Converter API
+# DWG to JPG Converter API
 
-一个基于FastAPI的RESTful API，用于将DWG文件转换为PDF格式，并支持与数据库集成进行自动化文档管理。
+一个基于FastAPI的RESTful API，用于将DWG文件转换为JPG格式，并支持与数据库集成进行自动化文档管理。
 
 ## 功能特点
 
-- 通过HTTP POST请求上传DWG文件并获取转换后的PDF文件
-- 使用AutoCAD COM接口进行高质量转换
+- 通过HTTP POST请求上传DWG文件并获取转换后的JPG文件
 - 支持从数据库读取DWG文件路径并自动转换
-- 转换完成后自动将PDF记录插入数据库（C_Attachment表）
+- 转换完成后自动将JPG记录插入数据库（C_Attachment表）
 - 智能路径处理，支持网络路径、绝对路径和相对路径
 - 基于.env文件的灵活配置管理
 - 支持异步处理和文件流式传输
@@ -15,8 +14,7 @@
 
 ## 系统要求
 
-- Windows操作系统（因为使用了AutoCAD COM接口）
-- 已安装AutoCAD软件
+- Windows操作系统
 - Python 3.9或更高版本
 - SQL Server数据库（可选，用于集成功能）
 - pip或uv包管理器
@@ -108,7 +106,7 @@ DWG_FILE_PREFIX=D:\Data
 
 **请求**：
 ```
-POST /convert/dwg-to-pdf
+POST /convert/dwg-to-jpg
 Content-Type: multipart/form-data
 ```
 
@@ -117,19 +115,19 @@ Content-Type: multipart/form-data
 
 **示例使用curl**：
 ```bash
-curl -X POST "http://localhost:8000/convert/dwg-to-pdf" -F "file=@path/to/your/file.dwg" --output converted.pdf
+curl -X POST "http://localhost:8000/convert/dwg-to-jpg" -F "file=@path/to/your/file.dwg" --output converted.jpg
 ```
 
 **示例使用Python requests**：
 ```python
 import requests
 
-url = "http://localhost:8000/convert/dwg-to-pdf"
+url = "http://localhost:8000/convert/dwg-to-jpg"
 files = {'file': open('path/to/your/file.dwg', 'rb')}
 response = requests.post(url, files=files)
 
 if response.status_code == 200:
-    with open('converted.pdf', 'wb') as f:
+    with open('converted.jpg', 'wb') as f:
         f.write(response.content)
     print("转换成功！")
 else:
@@ -166,12 +164,12 @@ curl -X POST "http://localhost:8000/convert/database" -H "Content-Type: applicat
 1. **从数据库读取DWG文件信息**：自动查询需要转换的DWG文件
 2. **智能路径处理**：自动识别并处理网络路径、绝对路径和相对路径
    - 相对路径会使用 `DWG_FILE_PREFIX` 环境变量进行前缀拼接
-3. **PDF记录自动插入**：转换完成后自动将PDF文件信息插入到 `C_Attachment` 表
-4. **转换状态标记**：更新原始DWG记录的 `istopdf` 字段表示转换状态
+3. **JPG记录自动插入**：转换完成后自动将JPG文件信息插入到 `C_Attachment` 表
+4. **转换状态标记**：更新原始DWG记录的 `istopdf` 字段表示转换状态（后续版本将更新为 `istojpg`）
 
 ### 表结构说明
 
-`C_Attachment` 表包含以下主要字段（用于PDF集成）：
+`C_Attachment` 表包含以下主要字段（用于JPG集成）：
 - `Id`: 主键ID
 - `RefId`: 关联ID（与原始DWG记录关联）
 - `AttachmentType`: 附件类型
@@ -183,7 +181,7 @@ curl -X POST "http://localhost:8000/convert/database" -H "Content-Type: applicat
 - `LastUpdateBy`: 最后更新人
 - `LastUpdateTime`: 最后更新时间
 - `isdeleted`: 是否删除
-- `istopdf`: PDF转换状态（0=未转换，1=已转换，-1=转换失败）
+- `istopdf`: 转换状态（0=未转换，1=已转换，-1=转换失败）- 后续版本将更新为 `istojpg`
 
 ## 依赖检查
 
@@ -234,7 +232,7 @@ test_api.bat
 
 这两个脚本都可以：
 - 不带参数：测试API连接是否正常
-- 带DWG文件路径参数：测试DWG到PDF转换功能
+- 带DWG文件路径参数：测试DWG到JPG转换功能
 
 例如：
 ```bash
@@ -254,7 +252,7 @@ pip install requests
 # 测试API连接
 python test_api.py
 
-# 测试DWG到PDF转换功能
+# 测试DWG到JPG转换功能
 python test_api.py path/to/your/file.dwg
 ```
 
@@ -267,8 +265,8 @@ test_db_connection.py
 # 测试数据库查询
 test_database_query.py
 
-# 测试PDF插入数据库功能
-test_updated_insert_pdf.py
+# 测试JPG插入数据库功能
+test_updated_insert_jpg.py
 ```
 
 ### 3. 路径处理测试
@@ -286,7 +284,7 @@ python test_path_prefix.py
 - API会自动清理临时文件，但在异常情况下可能需要手动清理`./temp`目录
 - 使用数据库集成功能时，请确保`.env`文件中的数据库连接信息正确
 - 路径处理逻辑会自动识别网络路径（以\\开头）、绝对路径（包含:）和相对路径
-- 转换状态通过`istopdf`字段标识：0=未转换，1=已转换，-1=转换失败
+- 转换状态通过`istopdf`字段标识：0=未转换，1=已转换，-1=转换失败（后续版本将更新为 `istojpg`）
 
 ## 许可证
 
