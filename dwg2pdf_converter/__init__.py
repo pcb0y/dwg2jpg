@@ -10,6 +10,6 @@ DWG2PDF Converter Package
 __version__ = '1.0.0'
 __author__ = 'DWG2PDF Team'
 
-from .converter import convert_dwg_to_pdf, convert_dxf_to_pdf, convert_dxf_to_image
+from .converter import convert_dwg_to_dxf, convert_dxf_to_jpg
 
-__all__ = ['convert_dwg_to_pdf', 'convert_dxf_to_pdf', 'convert_dxf_to_image']
+__all__ = ['convert_dwg_to_dxf', 'convert_dxf_to_jpg']

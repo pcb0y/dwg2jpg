@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 import subprocess
 
+
+
 import ezdxf
 import numpy as np
 import matplotlib
@@ -75,55 +77,133 @@ def read_dxf(filepath):
 
 def convert_dwg_to_dxf(dwg_path, dxf_path=None):
     """
-    将DWG文件转换为DXF文件
+    把dwg文件转换为dxf文件
     
     Args:
         dwg_path: DWG文件路径
-        dxf_path: 输出DXF文件路径（可选，默认在临时目录生成）
+        dxf_path: 输出DXF文件路径，如果不提供则使用与DWG相同的目录
         
     Returns:
-        str: 转换后的DXF文件路径
+        bool: 转换是否成功
     """
     try:
-        # 确保输入文件存在
+        # 定义ODA转换器路径 - 根据项目结构，ODA文件夹位于项目根目录
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        oda_converter_path = os.path.join(project_root, 'ODA', 'ODAFileConverter26.7.0', 'ODAFileConverter.exe')
+        
+        if not os.path.exists(oda_converter_path):
+            logger.error(f"ODA转换工具不存在: {oda_converter_path}")
+            return False
+        
+        logger.info(f"ODA转换工具路径: {oda_converter_path}")
+        
+        # 检查输入DWG文件是否存在
         if not os.path.exists(dwg_path):
-            raise FileNotFoundError(f"DWG文件不存在: {dwg_path}")
+            logger.error(f"输入DWG文件不存在: {dwg_path}")
+            return False
         
-        # 如果未指定输出路径，在临时目录生成
-        if dxf_path is None:
-            temp_dir = tempfile.gettempdir()
-            temp_filename = next(tempfile._get_candidate_names()) + '.dxf'
-            dxf_path = os.path.join(temp_dir, temp_filename)
+        logger.info(f"使用DWG文件: {dwg_path}")
         
-        logger.info(f"正在将DWG转换为DXF: {dwg_path} -> {dxf_path}")
+        # 确定输出目录和文件名
+        input_dir = os.path.dirname(dwg_path)
+        input_filename = os.path.basename(dwg_path)
         
-        # 使用ezdxf的命令行工具转换DWG到DXF
-        # 注意：这需要安装AutoCAD或其他支持DWG转换的工具
-        # 这里使用的是一个假设的命令，实际需要根据系统环境调整
-        try:
-            # 尝试使用ezdxf直接读取DWG（仅支持某些版本）
-            doc = ezdxf.readfile(str(dwg_path))
-            doc.saveas(str(dxf_path))
-            logger.info(f"成功使用ezdxf将DWG转换为DXF")
-            return dxf_path
-        except Exception as e:
-            logger.warning(f"ezdxf直接读取DWG失败，尝试使用其他方法: {str(e)}")
+        # 如果提供了dxf_path，则使用它；否则使用默认的临时目录
+        if dxf_path:
+            # 确保输出目录存在
+            output_dir = os.path.dirname(dxf_path)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir, exist_ok=True)
             
-            # 尝试使用其他方法（如ODA File Converter）
-            # 这里添加其他转换方法的实现
-            # 由于环境限制，这里仅返回一个临时路径
-            logger.warning(f"无法直接转换DWG，创建临时DXF文件")
+            # 构建临时输出目录（用于ODA转换）
+            temp_output_dir = os.path.dirname(dxf_path)
+        else:
+            # 默认使用临时目录，而不是与DWG相同的目录，以避免输入输出目录相同
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            temp_output_dir = os.path.join(project_root, 'temp', 'output')
+            os.makedirs(temp_output_dir, exist_ok=True)
+        
+        # 检查输入和输出目录是否相同
+        normalized_input_dir = os.path.normpath(input_dir)
+        normalized_output_dir = os.path.normpath(temp_output_dir)
+        
+        if normalized_input_dir == normalized_output_dir:
+            # 如果输入和输出目录相同，创建一个唯一的临时目录
+            import tempfile
+            temp_output_dir = tempfile.mkdtemp(prefix='dxf_convert_')
+            logger.warning(f"输入和输出目录不能相同，已创建临时输出目录: {temp_output_dir}")
+        
+        logger.info(f"输入目录: {input_dir}")
+        logger.info(f"输出目录: {temp_output_dir}")
+        logger.info(f"输入文件名: {input_filename}")
+        
+        # 确保输出目录存在
+        if not os.path.exists(temp_output_dir):
+            os.makedirs(temp_output_dir, exist_ok=True)
+        
+        # 列出输入目录中的文件
+        logger.info(f"输入目录内容: {os.listdir(input_dir)}")
+        
+        # 构建ODA转换命令 - 修改参数确保输出为DXF格式
+        cmd_args = [
+            oda_converter_path,
+            input_dir,  # 输入目录
+            temp_output_dir,  # 输出目录
+            'ACAD2018',  # 输出版本
+            'DXF',  # 输出格式设置为DXF
+            '0',  # 0表示转换所有文件
+            input_filename  # 要转换的文件名
+        ]
             
-            # 创建一个最小的DXF文件作为占位符
-            doc = ezdxf.new('R2010')
-            msp = doc.modelspace()
-            msp.add_text(f"DWG文件: {os.path.basename(dwg_path)}", dxfattribs={'height': 10}).set_pos((0, 0))
-            doc.saveas(str(dxf_path))
+        logger.info(f"执行ODA转换命令: {' '.join(cmd_args)}")
+        
+        # 执行命令
+        result = subprocess.run(
+            cmd_args,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        logger.info(f"ODA转换成功，输出: {result.stdout}")
+        logger.info(f"ODA错误输出: {result.stderr}")
             
-            return dxf_path
+        # 检查是否有DXF文件生成
+        output_files = os.listdir(temp_output_dir)
+        logger.info(f"输出目录内容: {output_files}")
+        
+        # 找到转换后的DXF文件
+        base_name = os.path.splitext(input_filename)[0]
+        dxf_files = [f for f in output_files if f.lower().startswith(base_name.lower()) and f.lower().endswith('.dxf')]
+        
+        if dxf_files:
+            logger.info(f"找到转换后的DXF文件: {dxf_files}")
+            
+            # 如果指定了特定的dxf_path，且转换后的文件名与目标文件名不同，则移动文件
+            if dxf_path and os.path.basename(dxf_path) not in dxf_files:
+                source_dxf = os.path.join(temp_output_dir, dxf_files[0])
+                try:
+                    # 首先尝试使用os.rename，这在同一磁盘上效率更高
+                    os.rename(source_dxf, dxf_path)
+                except OSError:
+                    # 如果跨磁盘，则使用shutil.move
+                    import shutil
+                    shutil.move(source_dxf, dxf_path)
+                logger.info(f"已将文件移动到: {dxf_path}")
+            
+            return True
+        else:
+            logger.error(f"未找到转换后的DXF文件")
+            return False
+                
     except Exception as e:
-        logger.error(f"DWG到DXF转换失败: {str(e)}")
-        raise
+        logger.error(f"创建测试文件或执行ODA转换时出错: {str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"测试ODA转换器时出错: {str(e)}")
+        return False
 
 def calculate_bbox(doc):
     """
@@ -160,13 +240,17 @@ def calculate_bbox(doc):
     
     return min_x, min_y, max_x, max_y
 
-def convert_dxf_to_image(doc, output_path, size=1600, bg_color='white', line_color='black', dpi=300):
+
+
+
+
+def convert_dxf_to_jpg(doc, output_path, size=1600, bg_color='white', line_color='black', dpi=300):
     """
-    将DXF文档转换为图像文件
+    将DXF文档转换为JPG图像
     
     Args:
         doc: ezdxf.drawing.Drawing对象
-        output_path: 输出图像文件路径
+        output_path: 输出JPG文件路径
         size: 输出图像的宽度 (像素)
         bg_color: 背景颜色
         line_color: 线条颜色
@@ -176,10 +260,10 @@ def convert_dxf_to_image(doc, output_path, size=1600, bg_color='white', line_col
         bool: 转换是否成功
     """
     try:
-        logger.info(f"正在转换DXF为图像: {output_path}")
+        logger.info(f"正在转换DXF为JPG: {output_path}")
         
         # 创建matplotlib图形
-        fig = plt.figure(figsize=(20, 16), dpi=dpi)
+        fig = plt.figure(figsize=(size/dpi, size/dpi), dpi=dpi)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.set_axis_off()
         ax.set_facecolor(bg_color)
@@ -190,8 +274,8 @@ def convert_dxf_to_image(doc, output_path, size=1600, bg_color='white', line_col
         
         # 获取布局属性并设置颜色
         msp_properties = LayoutProperties.from_layout(doc.modelspace())
-        
         # 将颜色名称转换为十六进制格式
+        # 背景色默认为白色 #FFFFFF，前景色默认为黑色 #000000
         bg_hex = "#FFFFFF" if bg_color == "white" else "#000000" if bg_color == "black" else bg_color
         fg_hex = "#000000" if line_color == "black" else "#FFFFFF" if line_color == "white" else line_color
         
@@ -200,154 +284,32 @@ def convert_dxf_to_image(doc, output_path, size=1600, bg_color='white', line_col
             bg_hex = "#" + bg_hex
         if not fg_hex.startswith("#") and len(fg_hex) == 6:
             fg_hex = "#" + fg_hex
-            
+             
         # 设置前景色（线条颜色）和背景色
         msp_properties.set_colors(bg_hex, fg=fg_hex)
         
-        # 创建自定义后端和前端
-        backend = MatplotlibBackendCustom(ax)
+        # 创建后端和前端
+        backend = MatplotlibBackend(ax)
         frontend = Frontend(ctx, backend)
         
         # 渲染DXF实体
         frontend.draw_layout(doc.modelspace(), finalize=True, layout_properties=msp_properties)
         
-        # 计算边界框
-        min_x, min_y, max_x, max_y = calculate_bbox(doc)
-        x_range = max_x - min_x
-        y_range = max_y - min_y
+        # 调整视图以适应所有实体
+        ax.autoscale(tight=True)
+        ax.set_aspect('equal')
         
-        # 计算缩放因子，确保内容大小合适
-        scale_up = max(2000 / x_range, 1600 / y_range) if x_range > 0 and y_range > 0 else 1.0
-        
-        # 强制调整视图以适应所有实体
-        ax.set_xlim(min_x - x_range * 0.1, max_x + x_range * 0.1)
-        ax.set_ylim(min_y - y_range * 0.1, max_y + y_range * 0.1)
-        
-        # 设置坐标轴不可见
-        ax.axis('off')
-        
-        # 保存为图像文件
+        # 保存为JPG
         canvas = FigureCanvas(fig)
-        fig.savefig(output_path, format='png', dpi=dpi, bbox_inches='tight', pad_inches=0)
+        fig.savefig(output_path, format='jpg', dpi=dpi, bbox_inches='tight')
         plt.close(fig)
         
-        logger.info(f"图像转换完成: {output_path}")
+        logger.info(f"转换完成: {output_path}")
         return True
     except Exception as e:
-        logger.error(f"图像转换过程中出错")
+        logger.error(f"转换过程中出错")
         logger.error(f"错误: {str(e)}")
         return False
 
-def convert_dxf_to_pdf(doc, output_path, dpi=800):
-    """
-    将DXF文档转换为PDF文件
-    
-    Args:
-        doc: ezdxf.drawing.Drawing对象
-        output_path: 输出PDF文件路径
-        dpi: 输出PDF的DPI
-        
-    Returns:
-        bool: 转换是否成功
-    """
-    try:
-        logger.info(f"正在转换DXF为PDF: {output_path}")
-        
-        # 先创建一个用于渲染的图形
-        fig = plt.figure(figsize=(20, 16), dpi=dpi)
-        ax = fig.add_axes([0, 0, 1, 1])
-        ax.set_axis_off()
-        
-        # 设置渲染上下文
-        ctx = RenderContext(doc)
-        ctx.set_current_layout(doc.modelspace())
-        
-        # 获取布局属性
-        msp_properties = LayoutProperties.from_layout(doc.modelspace())
-        
-        # 创建自定义后端和前端
-        backend = MatplotlibBackendCustom(ax)
-        frontend = Frontend(ctx, backend)
-        
-        # 渲染DXF实体
-        frontend.draw_layout(doc.modelspace(), finalize=True, layout_properties=msp_properties)
-        
-        # 计算边界框并调整视图
-        min_x, min_y, max_x, max_y = calculate_bbox(doc)
-        x_range = max_x - min_x
-        y_range = max_y - min_y
-        
-        # 调整视图
-        ax.set_xlim(min_x - x_range * 0.1, max_x + x_range * 0.1)
-        ax.set_ylim(min_y - y_range * 0.1, max_y + y_range * 0.1)
-        
-        # 设置坐标轴不可见
-        ax.axis('off')
-        
-        # 保存为PDF文件
-        fig.savefig(output_path, format='pdf', dpi=dpi, bbox_inches='tight')
-        plt.close(fig)
-        
-        logger.info(f"PDF转换完成: {output_path}")
-        return True
-    except Exception as e:
-        logger.error(f"PDF转换过程中出错")
-        logger.error(f"错误: {str(e)}")
-        return False
 
-def convert_dwg_to_pdf(dwg_path, pdf_path):
-    """
-    将DWG文件转换为PDF文件
-    
-    Args:
-        dwg_path: DWG文件路径
-        pdf_path: 输出PDF文件路径
-        
-    Returns:
-        bool: 转换是否成功
-    """
-    try:
-        logger.info(f"开始DWG到PDF转换: {dwg_path} -> {pdf_path}")
-        
-        # 确保输出目录存在
-        pdf_dir = os.path.dirname(pdf_path)
-        if pdf_dir and not os.path.exists(pdf_dir):
-            os.makedirs(pdf_dir)
-        
-        # 步骤1: 将DWG转换为DXF
-        temp_dxf = None
-        try:
-            # 创建临时DXF文件
-            temp_dir = tempfile.gettempdir()
-            temp_filename = next(tempfile._get_candidate_names()) + '.dxf'
-            temp_dxf = os.path.join(temp_dir, temp_filename)
-            
-            # 转换DWG到DXF
-            convert_dwg_to_dxf(dwg_path, temp_dxf)
-            
-            # 步骤2: 读取转换后的DXF文件
-            doc = read_dxf(temp_dxf)
-            
-            # 步骤3: 将DXF转换为PDF
-            success = convert_dxf_to_pdf(doc, pdf_path)
-            
-            if success:
-                logger.info(f"DWG到PDF转换成功: {pdf_path}")
-                return True
-            else:
-                logger.error(f"DWG到PDF转换失败")
-                return False
-        except Exception as e:
-            logger.error(f"DWG到PDF转换过程中出错: {str(e)}")
-            raise
-        finally:
-            # 清理临时文件
-            if temp_dxf and os.path.exists(temp_dxf):
-                try:
-                    os.remove(temp_dxf)
-                    logger.info(f"已清理临时DXF文件: {temp_dxf}")
-                except Exception as cleanup_error:
-                    logger.warning(f"清理临时DXF文件失败: {str(cleanup_error)}")
-    except Exception as e:
-        logger.error(f"DWG到PDF转换失败: {str(e)}")
-        raise
+
