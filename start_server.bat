@@ -1,5 +1,5 @@
 @echo off
-chcp 65001 >nul
+
 
 REM DWG to PDF Converter API启动脚本
 
