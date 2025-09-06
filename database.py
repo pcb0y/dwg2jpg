@@ -40,6 +40,7 @@ class SQLDatabase:
             self.conn = pyodbc.connect(conn_str)
             logger.info(f"成功连接到数据库: {server}/{database}")
         except Exception as e:
+            print(server,database,username,password,driver)
             logger.error(f"数据库连接失败: {str(e)}")
             self.conn = None
     
