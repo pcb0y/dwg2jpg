@@ -165,7 +165,7 @@ curl -X POST "http://localhost:8000/convert/database" -H "Content-Type: applicat
 2. **智能路径处理**：自动识别并处理网络路径、绝对路径和相对路径
    - 相对路径会使用 `DWG_FILE_PREFIX` 环境变量进行前缀拼接
 3. **JPG记录自动插入**：转换完成后自动将JPG文件信息插入到 `C_Attachment` 表
-4. **转换状态标记**：更新原始DWG记录的 `istopdf` 字段表示转换状态（后续版本将更新为 `istojpg`）
+4. **转换状态标记**：更新原始DWG记录的 `istojpg` 字段表示转换状态
 
 ### 表结构说明
 
@@ -181,7 +181,7 @@ curl -X POST "http://localhost:8000/convert/database" -H "Content-Type: applicat
 - `LastUpdateBy`: 最后更新人
 - `LastUpdateTime`: 最后更新时间
 - `isdeleted`: 是否删除
-- `istopdf`: 转换状态（0=未转换，1=已转换，-1=转换失败）- 后续版本将更新为 `istojpg`
+- `istojpg`: 转换状态（0=未转换，1=已转换，-1=转换失败）
 
 ## 依赖检查
 
@@ -190,19 +190,6 @@ curl -X POST "http://localhost:8000/convert/database" -H "Content-Type: applicat
 python check_dependencies.py
 ```
 
-### 直接测试win32com模块
-如果只想专门测试win32com相关模块是否正确安装，可以运行：
-```bash
-python test_win32com.py
-```
-
-这个脚本会直接测试win32com.client和pythoncom模块的导入，并提供详细的错误信息和解决方案。
-
-### 解决win32com依赖问题
-如果遇到win32com.client模块缺失的问题，请运行专门的英文修复脚本：
-```bash
-install_basic_deps.bat
-```
 
 这个脚本使用英文命令，避免了编码问题，它会：
 1. 检查并创建虚拟环境
