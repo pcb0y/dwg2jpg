@@ -12,7 +12,7 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
     host = os.getenv("HOST", "0.0.0.0")
     
-    logger.info(f"启动DWG到PDF转换器API服务，监听地址: {host}:{port}")
+    logger.info(f"启动DWG到JPG转换器API服务，监听地址: {host}:{port}")
     
     # 启动FastAPI应用
     # 使用reload=True在开发环境下启用热重载，但在生产环境中应设置为False

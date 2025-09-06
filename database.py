@@ -116,7 +116,7 @@ def get_dwg_files_from_database():
                c_order o 
             INNER JOIN C_Attachment c on c.RefId = o.id 
             WHERE 
-               OrderStatus BETWEEN 60 and 160 and c.istopdf is null  AND c.FilePath LIKE '%.dwg'
+               OrderStatus BETWEEN 60 and 160 and c.istojpg is null  AND c.FilePath LIKE '%.dwg'
         """
         
         results = db.execute_query(query)
@@ -214,13 +214,13 @@ def record_conversion_to_database(file_name, original_path, jpg_path, status, fi
         
         if status == "成功":
             insert_query = """
-                INSERT INTO conversion_history (file_name, original_path, pdf_path, status, file_size)
+                INSERT INTO conversion_history (file_name, original_path, jpg_path, status, file_size)
                 VALUES (?, ?, ?, ?, ?)
             """
             params = (file_name, original_path, relative_jpg_path, status, file_size)
         else:
             insert_query = """
-                INSERT INTO conversion_history (file_name, original_path, pdf_path, status, error_message)
+                INSERT INTO conversion_history (file_name, original_path, jpg_path, status, error_message)
                 VALUES (?, ?, ?, ?, ?)
             """
             params = (file_name, original_path, relative_jpg_path, status, error_message)
@@ -231,7 +231,7 @@ def record_conversion_to_database(file_name, original_path, jpg_path, status, fi
         logger.error(f"保存转换记录到数据库失败: {str(db_error)}")
 
 def update_attachment_is_jpg(order_id, file_path):
-    """更新C_Attachment表中的istopdf字段，标记为已转换"""
+    """更新C_Attachment表中的istojpg字段，标记为已转换（注意：istojpg是历史遗留字段名，实际存储的是JPG转换状态）"""
     
     try:
         # 首先查找对应的jpg文件路径
@@ -249,9 +249,9 @@ def update_attachment_is_jpg(order_id, file_path):
                 # 检查文件大小
                 jpg_file_size = os.path.getsize(jpg_path)
                 
-                # 如果文件大小小于20字节，很可能是只有jpg头的空文件，不更新istopdf字段
+                # 如果文件大小小于20字节，很可能是只有jpg头的空文件，不更新istojpg字段
                 if jpg_file_size < 20:
-                    logger.warning(f"jpg文件为空（仅包含头信息）: {jpg_path}，大小: {jpg_file_size} 字节，不更新istopdf字段")
+                    logger.warning(f"jpg文件为空（仅包含头信息）: {jpg_path}，大小: {jpg_file_size} 字节，不更新istojpg字段")
                     return
     except Exception as check_error:
         logger.warning(f"检查JPG文件时出错: {str(check_error)}")
@@ -261,7 +261,7 @@ def update_attachment_is_jpg(order_id, file_path):
     try:
         update_query = """
             UPDATE C_Attachment
-            SET istopdf = 1
+            SET istojpg = 1
             WHERE RefId = ? AND FilePath = ?
         """
         affected_rows = db.execute_query(update_query, (order_id, file_path))
@@ -380,7 +380,7 @@ def insert_jpg_to_attachment(order_id, jpg_path, original_dwg_path):
                 GroupGuid, 
                 Tag, 
                 Version, 
-                istopdf
+                istojpg
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         
@@ -394,7 +394,7 @@ def insert_jpg_to_attachment(order_id, jpg_path, original_dwg_path):
             group_guid,  # GroupGuid: 分组GUID，与原始DWG相同
             tag,  # Tag: 标签
             version,  # Version: 版本号
-            1  # istopdf: 暂时保持为1，后续会更新为istojpg字段
+            1  # istojpg: 暂时保持为1，后续会更新为istojpg字段
         )
         
         affected_rows = db.execute_query(insert_query, params)
@@ -430,7 +430,7 @@ def get_dwg_attachment_record(order_id, dwg_path):
         return None
 
 def update_conversion_status(order_id, file_path, status, error_message=""):
-    """更新转换状态，更新C_Attachment表中的istopdf字段表示转换状态"""
+    """更新转换状态，更新C_Attachment表中的istojpg字段表示转换状态（注意：istojpg是历史遗留字段名，实际存储的是JPG转换状态）"""
     try:
         logger.info(f"更新订单ID: {order_id} 的转换状态为: {status}")
         
@@ -440,7 +440,7 @@ def update_conversion_status(order_id, file_path, status, error_message=""):
         if status == "失败":
             update_query = """
                 UPDATE C_Attachment
-                SET istopdf = -1
+                SET istojpg = -1
                 WHERE RefId = ? AND FilePath = ?
             """
             affected_rows = db.execute_query(update_query, (order_id, normalized_file_path))
@@ -448,7 +448,7 @@ def update_conversion_status(order_id, file_path, status, error_message=""):
         elif status == "成功":
             update_query = """
                 UPDATE C_Attachment
-                SET istopdf = 1
+                SET istojpg = 1
                 WHERE RefId = ? AND FilePath = ?
             """
             affected_rows = db.execute_query(update_query, (order_id, normalized_file_path))
@@ -460,12 +460,12 @@ def update_conversion_status(order_id, file_path, status, error_message=""):
             # 尝试使用LIKE操作符进行模糊匹配
             like_query = """
                 UPDATE C_Attachment
-                SET istopdf = ?
+                SET istojpg = ?
                 WHERE RefId = ? AND FilePath LIKE ?
             """
-            istopdf_value = -1 if status == "失败" else 1
+            istojpg_value = -1 if status == "失败" else 1
             like_affected_rows = db.execute_query(like_query, 
-                (istopdf_value, order_id, f'%{os.path.basename(normalized_file_path)}%'))
+                (istojpg_value, order_id, f'%{os.path.basename(normalized_file_path)}%'))
             if like_affected_rows > 0:
                 logger.info(f"通过文件名模糊匹配找到了记录，已更新 {like_affected_rows} 条记录")
     except Exception as db_error:

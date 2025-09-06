@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# DWG to PDF Converter API 部署脚本
+# DWG to JPG Converter API 部署脚本
 # 使用方法: bash deploy_server.sh
 
 # 配置项
-APP_DIR="/opt/dwg2pdf-api"
+APP_DIR="/opt/dwg2jpg-api"
 PYTHON_VERSION="3.9"
 VENV_NAME="venv"
 DB_SERVER="localhost"
-DB_NAME="dwg2pdf"
-DB_USER="dwg2pdf_user"
+DB_NAME="dwg2jpg"
+DB_USER="dwg2jpg_user"
 DB_PASS=""
 PORT="8000"
 
@@ -83,7 +83,7 @@ success "Python虚拟环境创建完成"
 
 # 步骤4: 克隆代码 (假设当前目录已有代码，实际部署时替换为git clone命令)
 info "克隆项目代码..."
-# git clone https://your-repo-url/dwg2pdf-api.git .
+# git clone https://your-repo-url/dwg2jpg-api.git .
 
 # 如果是本地测试，可以复制当前目录内容
 success "代码部署完成"
@@ -130,11 +130,11 @@ chmod 777 temp
 
 success "临时目录创建完成"
 
-# 步骤8: 设置systemd服务
+# 设置systemd服务
 info "设置systemd服务..."
-cat > /etc/systemd/system/dwg2pdf-api.service << EOF
+cat > /etc/systemd/system/dwg2jpg-api.service << EOF
 [Unit]
-Description=DWG to PDF Converter API
+Description=DWG to JPG Converter API
 After=network.target
 
 [Service]
@@ -151,12 +151,12 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable dwg2pdf-api
+systemctl enable dwg2jpg-api
 success "systemd服务设置完成"
 
-# 步骤9: 配置Nginx反向代理
+# 配置Nginx反向代理
 info "配置Nginx反向代理..."
-cat > /etc/nginx/sites-available/dwg2pdf-api << EOF
+cat > /etc/nginx/sites-available/dwg2jpg-api << EOF
 server {
     listen 80;
     server_name localhost;
@@ -173,24 +173,24 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/dwg2pdf-api /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/dwg2jpg-api /etc/nginx/sites-enabled/
 nginx -t && systemctl restart nginx
 
 success "Nginx反向代理配置完成"
 
 # 步骤10: 显示部署完成信息
-echo -e "\n${GREEN}======================================${NC}"
-echo -e "${GREEN}DWG to PDF Converter API 部署完成${NC}"
+echo -e "${GREEN}======================================${NC}"
+echo -e "${GREEN}DWG to JPG Converter API 部署完成${NC}"
 echo -e "${GREEN}======================================${NC}"
 echo -e "${BLUE}1. 请完成以下配置:${NC}"
 echo -e "   - 编辑 ${APP_DIR}/.env 文件，配置数据库连接和ODA转换器路径"
 echo -e "   - 确保ODA File Converter已正确安装"
 echo -e ""
 echo -e "${BLUE}2. 启动服务:${NC}"
-echo -e "   systemctl start dwg2pdf-api"
+echo -e "   systemctl start dwg2jpg-api"
 echo -e ""
 echo -e "${BLUE}3. 查看服务状态:${NC}"
-echo -e "   systemctl status dwg2pdf-api"
+echo -e "   systemctl status dwg2jpg-api"
 echo -e ""
 echo -e "${BLUE}4. 访问API文档:${NC}"
 echo -e "   http://服务器IP地址/docs"

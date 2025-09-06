@@ -1,5 +1,5 @@
 [project]
-name = "dwg2pdf-api"
+name = "dwg2jpg-api"
 version = "0.1.0"
 description = "DWG to JPG conversion API using FastAPI"
 authors = [

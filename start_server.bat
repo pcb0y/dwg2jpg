@@ -1,7 +1,7 @@
 @echo off
 
 
-REM DWG to PDF Converter API启动脚本
+REM DWG to JPG Converter API启动脚本
 
 REM 检查是否存在虚拟环境
 if exist .venv\Scripts\python.exe (
@@ -76,7 +76,7 @@ if not exist temp mkdir temp
 
 REM 启动API服务器
 cls
- echo DWG to PDF Converter API 服务器已启动
+ echo DWG to JPG Converter API 服务器已启动
  echo ==================================================
  echo 访问以下地址查看API文档：
  echo http://localhost:8000/docs

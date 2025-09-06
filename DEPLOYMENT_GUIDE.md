@@ -1,6 +1,6 @@
-# DWG to PDF Converter API 服务器部署指南
+# DWG to JPG Converter API 服务器部署指南
 
-本指南将帮助您在生产服务器上部署DWG to PDF Converter API应用。
+本指南将帮助您在生产服务器上部署DWG to JPG Converter API应用。
 
 ## 目录
 
@@ -51,8 +51,8 @@ dnf module enable python39 -y  # 如需安装特定Python版本
 ### 创建虚拟环境
 ```bash
 # 选择一个目录作为应用根目录
-mkdir -p /opt/dwg2pdf-api
-cd /opt/dwg2pdf-api
+mkdir -p /opt/dwg2jpg-api
+cd /opt/dwg2jpg-api
 
 # 创建Python虚拟环境
 python3 -m venv venv
@@ -70,10 +70,10 @@ pip install --upgrade pip
 
 ```bash
 # 克隆代码（假设您有git访问权限）
-git clone https://your-repo-url/dwg2pdf-api.git .
+git clone https://your-repo-url/dwg2jpg-api.git .
 
 # 或者上传代码包并解压
-tar -xzf dwg2pdf-api.tar.gz -C .
+tar -xzf dwg2jpg-api.tar.gz -C .
 ```
 
 ## 4. 依赖安装
@@ -161,22 +161,22 @@ gunicorn -w 4 -k uvicorn.workers.UvicornWorker api_endpoints:app --bind 0.0.0.0:
 创建systemd服务文件以确保应用在系统启动时自动运行，并在崩溃时自动重启：
 
 ```bash
-nano /etc/systemd/system/dwg2pdf-api.service
+nano /etc/systemd/system/dwg2jpg-api.service
 ```
 
 添加以下内容（根据您的实际路径修改）：
 
 ```ini
 [Unit]
-Description=DWG to PDF Converter API
+Description=DWG to JPG Converter API
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/dwg2pdf-api
-Environment="PATH=/opt/dwg2pdf-api/venv/bin"
-ExecStart=/opt/dwg2pdf-api/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker api_endpoints:app --bind 0.0.0.0:8000
+WorkingDirectory=/opt/dwg2jpg-api
+Environment="PATH=/opt/dwg2jpg-api/venv/bin"
+ExecStart=/opt/dwg2jpg-api/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker api_endpoints:app --bind 0.0.0.0:8000
 Restart=always
 RestartSec=5
 
@@ -188,11 +188,11 @@ WantedBy=multi-user.target
 
 ```bash
 systemctl daemon-reload
-systemctl enable dwg2pdf-api
-systemctl start dwg2pdf-api
+systemctl enable dwg2jpg-api
+systemctl start dwg2jpg-api
 
 # 检查服务状态
-systemctl status dwg2pdf-api
+systemctl status dwg2jpg-api
 ```
 
 ## 8. 反向代理设置(Nginx)
@@ -200,7 +200,7 @@ systemctl status dwg2pdf-api
 为了提供更好的性能和安全性，建议使用Nginx作为反向代理：
 
 ```bash
-nano /etc/nginx/sites-available/dwg2pdf-api
+nano /etc/nginx/sites-available/dwg2jpg-api
 ```
 
 添加以下配置（替换your_domain.com为您的域名）：
@@ -220,7 +220,7 @@ server {
 
     # 静态文件配置（如果有）
     location /static/ {
-        alias /opt/dwg2pdf-api/static/;
+        alias /opt/dwg2jpg-api/static/
         expires 30d;
     }
 
@@ -232,7 +232,7 @@ server {
 启用配置并重启Nginx：
 
 ```bash
-ln -s /etc/nginx/sites-available/dwg2pdf-api /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/dwg2jpg-api /etc/nginx/sites-enabled/
 nginx -t  # 检查配置是否正确
 systemctl restart nginx
 ```
@@ -252,11 +252,11 @@ chmod +x deploy.sh
 #!/bin/bash
 
 # 部署目录
-APP_DIR="/opt/dwg2pdf-api"
+APP_DIR="/opt/dwg2jpg-api"
 VENV_DIR="$APP_DIR/venv"
 
 # 停止服务
-systemctl stop dwg2pdf-api
+systemctl stop dwg2jpg-api
 
 # 进入应用目录
 cd $APP_DIR
@@ -271,10 +271,10 @@ source $VENV_DIR/bin/activate
 uv pip install -r requirements.txt
 
 # 重启服务
-systemctl start dwg2pdf-api
+systemctl start dwg2jpg-api
 
 # 查看服务状态
-systemctl status dwg2pdf-api
+systemctl status dwg2jpg-api
 ```
 
 ## 10. 监控与日志
@@ -283,7 +283,7 @@ systemctl status dwg2pdf-api
 
 ```bash
 # 使用journalctl查看服务日志
-journalctl -u dwg2pdf-api -f
+journalctl -u dwg2jpg-api -f
 
 # 或者查看FastAPI的日志文件（如果配置了日志记录到文件）
 # 根据logger_config.py中的配置查看相应日志文件

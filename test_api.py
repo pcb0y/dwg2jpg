@@ -2,6 +2,7 @@ import requests
 import os
 from pathlib import Path
 import time
+import requests
 
 # API服务器地址
 API_URL = "http://localhost:8000"

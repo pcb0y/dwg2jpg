@@ -302,7 +302,7 @@ async def convert_dwg_to_jpg_endpoint(order_id: int = None, file: UploadFile = F
         # 记录转换成功信息到数据库
         try:
             insert_query = """
-                INSERT INTO conversion_history (file_name, original_path, pdf_path, status, file_size)
+                INSERT INTO conversion_history (file_name, original_path, jpg_path, status, file_size)
                 VALUES (?, ?, ?, ?, ?)
             """
             db.execute_query(
@@ -447,7 +447,7 @@ async def convert_dwg_to_jpg_endpoint(order_id: int = None, file: UploadFile = F
         try:
             if 'file' in locals() and 'dwg_path' in locals() and hasattr(dwg_path, '__str__'):
                 insert_query = """
-                INSERT INTO conversion_history (file_name, original_path, pdf_path, status, error_message)
+                INSERT INTO conversion_history (file_name, original_path, jpg_path, status, error_message)
                 VALUES (?, ?, ?, ?, ?)
                 """
                 jpg_path_str = str(jpg_path) if 'jpg_path' in locals() and hasattr(jpg_path, '__str__') else ""
@@ -492,7 +492,7 @@ async def get_conversion_history(page: int = 1, page_size: int = 20, status: str
     try:
         offset = (page - 1) * page_size
         query_parts = [
-            "SELECT id, file_name, original_path, pdf_path, conversion_time, status, file_size, error_message",
+            "SELECT id, file_name, original_path, jpg_path, conversion_time, status, file_size, error_message",
             "FROM conversion_history",
             "WHERE 1=1"
         ]

@@ -3,7 +3,7 @@ from main import SQLDatabase, db
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("dwg2pdf-check")
+logger = logging.getLogger("dwg2jpg-check")
 
 
 # 获取C_Attachment表的结构信息

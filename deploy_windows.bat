@@ -5,16 +5,16 @@ chcp 65001 >nul
 
 cls
 echo ===================================================
-echo DWG to PDF Converter API Windows部署脚本
+echo DWG to JPG Converter API Windows部署脚本
 
-echo 此脚本将帮助您在Windows服务器上部署DWG转PDF转换服务
+echo 此脚本将帮助您在Windows服务器上部署DWG转JPG转换服务
 echo 请确保以管理员身份运行此脚本
 
 echo ===================================================
 
 REM 配置项 - 用户可根据需要修改
 echo 正在设置配置项...
-set "APP_DIR=C:\dwg2pdf-api"
+set "APP_DIR=C:\dwg2jpg-api"
 set "VENV_NAME=venv"
 set "PORT=8000"
 
@@ -156,19 +156,19 @@ REM 步骤6: 安装Windows服务配置
 echo.
 echo ===================================================
 echo 步骤6: 配置Windows服务
-set "WINSW_EXE=%APP_DIR%\dwg2pdf-api-service.exe"
-set "WINSW_XML=%APP_DIR%\dwg2pdf-api-service.xml"
+set "WINSW_EXE=%APP_DIR%\dwg2jpg-api-service.exe"
+set "WINSW_XML=%APP_DIR%\dwg2jpg-api-service.xml"
 
 if not exist "%WINSW_EXE%" (
     echo 警告: 未找到WinSW可执行文件。请手动下载并配置Windows服务。
     echo 下载地址: https://github.com/winsw/winsw/releases
-    echo 重命名为: dwg2pdf-api-service.exe
+    echo 重命名为: dwg2jpg-api-service.exe
 ) else (
     echo 创建Windows服务配置文件...
-    (echo ^<service^>
-    echo   ^<id^>dwg2pdf-api^</id^>
-    echo   ^<name^>DWG to PDF Converter API^</name^>
-    echo   ^<description^>提供DWG文件转换为PDF/JPG的Web服务^</description^>
+    (echo ^<service^>^
+    echo   ^<id^>dwg2jpg-api^</id^>^
+    echo   ^<name^>DWG to JPG Converter API^</name^>^
+    echo   ^<description^>提供DWG文件转换为JPG的Web服务^</description^>
     echo   ^<executable^>%APP_DIR%\%VENV_NAME%\Scripts\python.exe^</executable^>
     echo   ^<arguments^>-m uvicorn api_endpoints:app --host 127.0.0.1 --port %PORT%^</arguments^>
     echo   ^<workingdirectory^>%APP_DIR%^</workingdirectory^>
@@ -205,8 +205,8 @@ echo 2. 安装ODA File Converter
 echo 3. 注册Windows服务
    以管理员身份打开命令提示符，执行:
    cd %APP_DIR%
-   dwg2pdf-api-service.exe install
-   dwg2pdf-api-service.exe start
+   dwg2jpg-api-service.exe install
+   dwg2jpg-api-service.exe start
 
 echo 4. 可选：配置IIS作为反向代理
    请参考WINDOWS_DEPLOYMENT_GUIDE.md中的详细说明
@@ -216,7 +216,7 @@ echo 5. 验证服务
 
 echo.
 echo 如果需要卸载服务，请执行:
-   dwg2pdf-api-service.exe uninstall
+   dwg2jpg-api-service.exe uninstall
 
 echo ===================================================
 echo 如有问题，请参考WINDOWS_DEPLOYMENT_GUIDE.md文档

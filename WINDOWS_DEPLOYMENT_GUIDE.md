@@ -1,6 +1,6 @@
-# DWG to PDF Converter API Windows服务器部署指南
+# DWG to JPG Converter API Windows服务器部署指南
 
-本指南将帮助您在Windows Server环境下部署DWG to PDF Converter API应用。
+本指南将帮助您在Windows Server环境下部署DWG to JPG Converter API应用。
 
 ## 目录
 
@@ -67,16 +67,16 @@
 
 1. **创建应用目录**
    ```cmd
-   mkdir C:\dwg2pdf-api
-   cd C:\dwg2pdf-api
+   mkdir C:\dwg2jpg-api
+   cd C:\dwg2jpg-api
    ```
 
 2. **获取项目代码**
    - 使用Git克隆代码（推荐）：
      ```cmd
-     git clone https://your-repo-url/dwg2pdf-api.git .
+     git clone https://your-repo-url/dwg2jpg-api.git .
      ```
-   - 或者直接复制项目文件到`C:\dwg2pdf-api`目录
+   - 或者直接复制项目文件到`C:\dwg2jpg-api`目录
 
 ## 4. 依赖安装
 
@@ -147,21 +147,21 @@
 
 1. **下载WinSW**
    - 从[WinSW GitHub发布页](https://github.com/winsw/winsw/releases)下载最新版本的WinSW
-   - 将下载的文件重命名为`dwg2pdf-api-service.exe`并复制到`C:\dwg2pdf-api`目录
+   - 将下载的文件重命名为`dwg2jpg-api-service.exe`并复制到`C:\dwg2jpg-api`目录
 
 2. **创建服务配置文件**
-   - 在`C:\dwg2pdf-api`目录创建`dwg2pdf-api-service.xml`文件
+   - 在`C:\dwg2jpg-api`目录创建`dwg2jpg-api-service.xml`文件
    - 添加以下内容（根据您的实际路径修改）：
 
      ```xml
      <service>
-       <id>dwg2pdf-api</id>
-       <name>DWG to PDF Converter API</name>
-       <description>提供DWG文件转换为PDF/JPG的Web服务</description>
-       <executable>C:\dwg2pdf-api\venv\Scripts\python.exe</executable>
+       <id>dwg2jpg-api</id>
+       <name>DWG to JPG Converter API</name>
+       <description>提供DWG文件转换为JPG的Web服务</description>
+       <executable>C:\dwg2jpg-api\venv\Scripts\python.exe</executable>
        <arguments>-m uvicorn api_endpoints:app --host 127.0.0.1 --port 8000</arguments>
-       <workingdirectory>C:\dwg2pdf-api</workingdirectory>
-       <logpath>C:\dwg2pdf-api\logs</logpath>
+       <workingdirectory>C:\dwg2jpg-api</workingdirectory>
+       <logpath>C:\dwg2jpg-api\logs</logpath>
        <logmode>rotate</logmode>
        <onfailure action="restart" delay="10 sec"/>
        <onfailure action="restart" delay="20 sec"/>
@@ -172,26 +172,26 @@
 
 3. **创建日志目录**
    ```cmd
-   mkdir C:\dwg2pdf-api\logs
+   mkdir C:\dwg2jpg-api\logs
    ```
 
 4. **安装并启动服务**
    ```cmd
-   cd C:\dwg2pdf-api
-   dwg2pdf-api-service.exe install
-   dwg2pdf-api-service.exe start
+   cd C:\dwg2jpg-api
+   dwg2jpg-api-service.exe install
+   dwg2jpg-api-service.exe start
    ```
 
 5. **管理服务**
    ```cmd
    # 停止服务
-   dwg2pdf-api-service.exe stop
+   dwg2jpg-api-service.exe stop
    
    # 卸载服务
-   dwg2pdf-api-service.exe uninstall
+   dwg2jpg-api-service.exe uninstall
    
    # 查看服务状态
-   sc query dwg2pdf-api
+   sc query dwg2jpg-api
    ```
 
 ### 7.2 使用IIS作为反向代理
@@ -201,8 +201,8 @@
 
 2. **创建新网站**
    - 在左侧面板右击"网站" > "添加网站"
-   - 设置网站名称（如"DWG2PDF-API"）
-   - 设置物理路径（如"C:\dwg2pdf-api"）
+   - 设置网站名称（如"DWG2JPG-API"）
+   - 设置物理路径（如"C:\dwg2jpg-api"）
    - 设置绑定：
      - 类型：HTTP
      - IP地址：全部未分配
@@ -245,11 +245,11 @@
    @echo off
    
    echo ===================================================
-   echo DWG to PDF Converter API Windows部署脚本
-   echo ===================================================
-   
-   :: 配置项
-   set APP_DIR=C:\dwg2pdf-api
+echo DWG to JPG Converter API Windows部署脚本
+echo ===================================================
+
+:: 配置项
+set APP_DIR=C:\dwg2jpg-api
    set VENV_NAME=venv
    set PORT=8000
    
@@ -300,7 +300,7 @@
 ## 9. 监控与日志
 
 ### 应用日志
-- WinSW服务日志：`C:\dwg2pdf-api\logs`目录
+- WinSW服务日志：`C:\dwg2jpg-api\logs`目录
 - 根据`logger_config.py`中的配置查看应用日志
 
 ### IIS日志

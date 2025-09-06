@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 
-REM 修复DWG to PDF Converter API依赖问题
+REM 修复DWG to JPG Converter API依赖问题
 
 REM 检查是否存在虚拟环境
 if exist .venv\Scripts\python.exe (
