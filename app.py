@@ -1,13 +1,16 @@
 import os
 from dotenv import load_dotenv
 import uvicorn
+
+# 先加载.env文件中的环境变量
+load_dotenv()
+
+# 然后再导入logger_config和其他依赖环境变量的模块
 from logger_config import logger
 from api_endpoints import app
 
-# 加载.env文件中的环境变量
-load_dotenv()
-
 if __name__ == "__main__":
+    import os
     # 从环境变量获取端口号，如果不存在则使用默认值
     port = int(os.getenv("PORT", "8000"))
     host = os.getenv("HOST", "0.0.0.0")
