@@ -6,7 +6,7 @@ from dwg2jpg.converter import convert_dwg_to_jpg
 
 
 
-def converter_dwg_to_jpg(dwg_path, jpg_path, size=1600, bg_color='black', line_color='white', dpi=300):
+def converter_dwg_to_jpg(dwg_path, jpg_path, size=3200, bg_color='white', line_color='black', dpi=600):
     """使用dwg2jpg库将DWG文件转换为JPG图像"""
     logger.info(f"使用dwg2jpg库进行DWG到JPG转换: {dwg_path} -> {jpg_path}")
     
