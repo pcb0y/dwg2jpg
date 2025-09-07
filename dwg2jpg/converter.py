@@ -242,7 +242,7 @@ def calculate_bbox(doc):
 
 
 
-def convert_dwg_to_jpg(dwg_path, jpg_path, size=3200, bg_color='black', line_color='white', dpi=600):
+def convert_dwg_to_jpg(dwg_path, jpg_path, size=3200, bg_color='white', line_color='black', dpi=600):
     """
     将DWG文件直接转换为JPG图像
     
@@ -316,7 +316,7 @@ def convert_dwg_to_jpg(dwg_path, jpg_path, size=3200, bg_color='black', line_col
         logger.error(f"DWG到JPG转换过程中发生错误: {str(e)}")
         return False
 
-def convert_dxf_to_jpg(doc, output_path, size=3200, bg_color='black', line_color='white', dpi=600):
+def convert_dxf_to_jpg(doc, output_path, size=3200, bg_color='white', line_color='black', dpi=600):
     """
     将DXF文档转换为JPG图像
     
